@@ -37,3 +37,4 @@ def run_pipeline(topic):
 
     return result
     
+    

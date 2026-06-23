@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.env
+*.sqlite
+memory/story_memory.json
+.vscode/

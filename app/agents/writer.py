@@ -1,22 +1,18 @@
 from app.utils.llm_client import call_llm
-
+from rag.prompt_builder import build_rag_prompt
 
 def write_content(outline):
+    base_prompt = f"""You are a professional author.
+Write a full book based on this chapter outline:
 
-    prompt = f"""
-    Write a short book based on this outline.
+{outline}
 
-    The book should have chapters.
+For each chapter:
+- Write 2-3 detailed paragraphs
+- Use clear, engaging language
+- Include examples and explanations
 
-    Outline:
-    {outline}
-
-    Write:
-    Chapter 1
-    Chapter 2
-    Chapter 3
-    """
-
-    response = call_llm(prompt)
-
-    return response
+Write all chapters in full.
+"""
+    prompt = build_rag_prompt(base_prompt, query=outline)
+    return call_llm(prompt)

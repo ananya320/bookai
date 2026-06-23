@@ -1,74 +1,133 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>Book AI Generator</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
-        body { background: #f7f9fc; color: #333; padding: 20px; }
-        header { text-align: center; margin-bottom: 30px; }
-        header h1 { font-size: 2rem; color: #ffcc00; }
-        header p { font-size: 1rem; color: #555; }
-
-        form { max-width: 600px; margin: 0 auto 20px; display: flex; gap: 10px; }
-        input[type="text"] { flex: 1; padding: 10px; font-size: 1rem; border: 1px solid #ccc; border-radius: 5px; }
-        button { padding: 10px 20px; font-size: 1rem; border: none; border-radius: 5px; background: #ffcc00; color: #000; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #e6b800; }
-
-        .output { max-width: 800px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .output h2 { margin-bottom: 10px; color: #ff9900; }
-        .output pre { white-space: pre-wrap; word-wrap: break-word; font-size: 0.95rem; color: #222; }
-    </style>
-</head>
-<body>
-
-<header>
-    <h1>Book AI Generator</h1>
-    <p>Enter a topic and generate your AI-written book instantly!</p>
-</header>
-
-<main>
-    <form id="bookForm">
-        <input type="text" name="topic" id="topic" placeholder="Enter book topic..." required>
-        <button type="submit">Generate Book</button>
-    </form>
-
-    <div id="result" class="output" style="display:none;">
-        <h2>Generated Book:</h2>
-        <pre id="bookContent"></pre>
-    </div>
-</main>
-
-<script>
-document.getElementById("bookForm").addEventListener("submit", async function(e){
-    e.preventDefault();
-
-    const topic = document.getElementById("topic").value;
-    const resultDiv = document.getElementById("result");
-    const bookContent = document.getElementById("bookContent");
-
-    bookContent.textContent = "Generating book... please wait!";
-    resultDiv.style.display = "block";
-
-    try {
-        const response = await fetch(`/generate-book?topic=${encodeURIComponent(topic)}`);
-        const data = await response.json();
-
-        if (data.error) {
-            bookContent.textContent = "Error: " + data.error;
-        } else {
-            let content = `Idea:\n${data.idea}\n\nOutline:\n${data.outline}\n\nContent:\n${data.content}\n\nSummary:\n${data.summary}`;
-            bookContent.textContent = content;
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: #f1f5f9;
         }
 
-    } catch (err) {
-        bookContent.textContent = "An error occurred: " + err.message;
-    }
-});
-</script>
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #38bdf8;
+            margin-bottom: 10px;
+        }
+
+        p {
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        .input-box {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            background: #1e293b;
+            color: white;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #38bdf8;
+            color: #0f172a;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #0ea5e9;
+        }
+
+        .card {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+        }
+
+        h2 {
+            color: #22c55e;
+        }
+
+        .section {
+            margin-bottom: 15px;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            font-family: inherit;
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>📘 Book AI Generator</h1>
+    <p>Generate full AI-written stories instantly</p>
+
+    <form method="post" action="/generate-book-ui">
+        <div class="input-box">
+            <input type="text" name="topic" placeholder="Enter your topic..." required>
+            <button type="submit">Generate</button>
+        </div>
+    </form>
+
+    {% if result %}
+    <div class="card">
+
+        <h2>Generated Book</h2>
+
+        <div class="section">
+            <strong>Idea:</strong>
+            <pre>{{ result.idea }}</pre>
+        </div>
+
+        <div class="section">
+            <strong>Outline:</strong>
+            <pre>{{ result.outline }}</pre>
+        </div>
+
+        <div class="section">
+            <strong>Content:</strong>
+            <pre>{{ result.content }}</pre>
+        </div>
+
+        <div class="section">
+            <strong>Summary:</strong>
+            <pre>{{ result.summary }}</pre>
+        </div>
+
+    </div>
+    {% endif %}
+
+</div>
 
 </body>
 </html>

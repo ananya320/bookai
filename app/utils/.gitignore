@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# Environment variables - NEVER commit this
+.env
+app/.env
+
+# ChromaDB - too large for git
+chroma_db/
+
+# Generated files
+generated_books/
+memory/
+
+# VS Code
+.vscode/

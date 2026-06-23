@@ -1,4 +1,15 @@
 fastapi
-uvicorn
-python-dotenv
+uvicorn[standard]
 openai
+python-dotenv
+python-multipart
+chromadb
+langchain
+langchain-openai
+langchain-community
+langchain-text-splitters
+pypdf
+docx2txt
+tiktoken
+jinja2
+reportlab
