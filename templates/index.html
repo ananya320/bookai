@@ -1,133 +1,315 @@
-<!DOCTYPE html>
-<html>
+﻿<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Book AI Generator</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book AI Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Serif+4:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --parchment:#F2E8D5;
+    --parchment-dark:#E6D9BE;
+    --ink:#22262B;
+    --leather:#6B4226;
+    --gold:#B8863B;
+    --ribbon:#7A2E2E;
+    --shadow: 0 10px 30px rgba(34,38,43,0.15);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--parchment);
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(184,134,59,0.06), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(107,66,38,0.06), transparent 40%);
+    color:var(--ink);
+    font-family:'Source Serif 4', serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:48px 24px 80px;}
 
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #0f172a, #1e293b);
-            color: #f1f5f9;
-        }
+  header{text-align:center; margin-bottom:40px;}
+  header .eyebrow{
+    font-family:'Inter',sans-serif; font-size:12px; letter-spacing:0.18em;
+    text-transform:uppercase; color:var(--leather); font-weight:600;
+  }
+  header h1{
+    font-family:'Fraunces', serif; font-weight:700; font-size:clamp(36px,6vw,58px);
+    margin:8px 0 4px; letter-spacing:-0.01em;
+  }
+  header p{color:#55504a; font-size:17px; margin:0;}
 
-        .container {
-            max-width: 900px;
-            margin: 50px auto;
-            padding: 20px;
-        }
+  .book{
+    background:#fffdf8;
+    border-radius:6px;
+    box-shadow:var(--shadow);
+    border:1px solid rgba(107,66,38,0.15);
+    position:relative;
+    overflow:hidden;
+  }
+  .book::before{
+    content:"";
+    position:absolute; left:0; top:0; bottom:0; width:6px;
+    background:linear-gradient(180deg, var(--leather), var(--gold));
+  }
+  .book-inner{padding:36px 36px 32px 42px;}
 
-        h1 {
-            text-align: center;
-            color: #38bdf8;
-            margin-bottom: 10px;
-        }
+  label{
+    display:block; font-family:'Inter',sans-serif; font-size:12px;
+    letter-spacing:0.08em; text-transform:uppercase; color:var(--leather);
+    font-weight:600; margin:20px 0 8px;
+  }
+  label:first-of-type{margin-top:0;}
+  input[type="text"], textarea, select{
+    width:100%; font-family:'Source Serif 4', serif; font-size:16px;
+    padding:12px 14px; border-radius:4px; border:1px solid #d8cbb0;
+    background:#fffefb; color:var(--ink); resize:vertical;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus{
+    outline:2px solid var(--gold); outline-offset:1px; border-color:var(--gold);
+  }
+  textarea{min-height:90px;}
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  @media (max-width:600px){ .row{grid-template-columns:1fr;} }
 
-        p {
-            text-align: center;
-            color: #94a3b8;
-        }
+  .generate-btn{
+    margin-top:28px; width:100%; padding:15px 20px;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:15px;
+    letter-spacing:0.03em; color:#fff8ec; background:var(--ink);
+    border:none; border-radius:4px; cursor:pointer;
+    transition:transform .15s ease, background .15s ease;
+  }
+  .generate-btn:hover{background:#000; transform:translateY(-1px);}
+  .generate-btn:disabled{opacity:0.6; cursor:progress; transform:none;}
 
-        .input-box {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
+  .story-page{
+    margin-top:28px; padding:32px; background:#fffdf6;
+    border:1px solid #e5d7b8; border-radius:4px;
+    font-size:17px; line-height:1.75; white-space:pre-wrap;
+    display:none;
+  }
+  .story-page.show{display:block;}
+  .story-page h3{
+    font-family:'Fraunces',serif; font-size:24px; margin-top:0; color:var(--ribbon);
+  }
 
-        input {
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            outline: none;
-            font-size: 16px;
-            background: #1e293b;
-            color: white;
-        }
+  .shelf-heading{
+    font-family:'Fraunces',serif; font-size:26px; margin:56px 0 6px; text-align:center;
+  }
+  .shelf-sub{text-align:center; color:#55504a; font-size:14px; margin-bottom:26px;}
 
-        button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            background: #38bdf8;
-            color: #0f172a;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+  .shelf{
+    display:flex; flex-wrap:wrap; gap:14px; justify-content:center;
+  }
+  .spine{
+    width:64px; min-height:200px; border-radius:3px 6px 6px 3px;
+    box-shadow:2px 3px 6px rgba(0,0,0,0.25), inset -3px 0 4px rgba(0,0,0,0.2);
+    display:flex; flex-direction:column; align-items:center; justify-content:space-between;
+    padding:14px 6px; cursor:pointer; border:none;
+    font-family:'Inter',sans-serif; color:#fdf6ea;
+    transition:transform .15s ease;
+  }
+  .spine:hover{transform:translateY(-6px);}
+  .spine .title{
+    writing-mode:vertical-rl; font-size:12.5px; font-weight:600;
+    letter-spacing:0.03em; text-align:center; max-height:150px; overflow:hidden;
+  }
+  .spine .genre-dot{width:8px; height:8px; border-radius:50%; background:#fdf6ea; opacity:0.85;}
+  .empty-shelf{
+    text-align:center; color:#8a8377; font-size:14px; font-style:italic;
+  }
 
-        button:hover {
-            background: #0ea5e9;
-        }
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(20,18,14,0.55);
+    align-items:center; justify-content:center; padding:20px; z-index:50;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal{
+    background:#fffdf6; max-width:640px; width:100%; max-height:85vh; overflow-y:auto;
+    padding:36px; border-radius:6px; position:relative; box-shadow:var(--shadow);
+  }
+  .modal-close{
+    position:absolute; top:14px; right:16px; background:none; border:none;
+    font-size:22px; cursor:pointer; color:var(--leather); line-height:1;
+  }
+  .modal h3{font-family:'Fraunces',serif; font-size:24px; color:var(--ribbon); margin-top:4px;}
+  .modal .meta{font-family:'Inter',sans-serif; font-size:12px; color:#8a8377; margin-bottom:18px;}
+  .modal .body{font-size:16px; line-height:1.75; white-space:pre-wrap;}
 
-        .card {
-            margin-top: 30px;
-            padding: 20px;
-            border-radius: 12px;
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 20px rgba(0,0,0,0.3);
-        }
-
-        h2 {
-            color: #22c55e;
-        }
-
-        .section {
-            margin-bottom: 15px;
-        }
-
-        pre {
-            white-space: pre-wrap;
-            font-family: inherit;
-            color: #e2e8f0;
-        }
-    </style>
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:#fdf6ea; padding:12px 20px; border-radius:4px;
+    font-family:'Inter',sans-serif; font-size:14px; opacity:0; pointer-events:none;
+    transition:all .25s ease;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
 </head>
-
 <body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Book AI Generator</div>
+    <h1>Every story starts on a blank page</h1>
+    <p>Give it a name, a spark of plot, and a genre ΓÇö it writes the rest.</p>
+  </header>
 
-<div class="container">
+  <div class="book">
+    <div class="book-inner">
+      <label for="charName">Character name</label>
+      <input type="text" id="charName" placeholder="e.g. Mira Ashgrove">
 
-    <h1>📘 Book AI Generator</h1>
-    <p>Generate full AI-written stories instantly</p>
+      <label for="storyline">Storyline</label>
+      <textarea id="storyline" placeholder="e.g. A lighthouse keeper finds a message in a bottle written in her own handwriting."></textarea>
 
-    <form method="post" action="/generate-book-ui">
-        <div class="input-box">
-            <input type="text" name="topic" placeholder="Enter your topic..." required>
-            <button type="submit">Generate</button>
+      <div class="row">
+        <div>
+          <label for="genre">Genre</label>
+          <select id="genre">
+            <option>Fantasy</option>
+            <option>Science Fiction</option>
+            <option>Mystery</option>
+            <option>Romance</option>
+            <option>Horror</option>
+            <option>Adventure</option>
+            <option>Comedy</option>
+            <option>Drama</option>
+          </select>
         </div>
-    </form>
-
-    {% if result %}
-    <div class="card">
-
-        <h2>Generated Book</h2>
-
-        <div class="section">
-            <strong>Idea:</strong>
-            <pre>{{ result.idea }}</pre>
+        <div>
+          <label for="length">Length</label>
+          <select id="length">
+            <option value="short">Short</option>
+            <option value="medium" selected>Medium</option>
+            <option value="long">Long</option>
+          </select>
         </div>
+      </div>
 
-        <div class="section">
-            <strong>Outline:</strong>
-            <pre>{{ result.outline }}</pre>
-        </div>
+      <button class="generate-btn" id="generateBtn">Generate story</button>
 
-        <div class="section">
-            <strong>Content:</strong>
-            <pre>{{ result.content }}</pre>
-        </div>
-
-        <div class="section">
-            <strong>Summary:</strong>
-            <pre>{{ result.summary }}</pre>
-        </div>
-
+      <div class="story-page" id="storyPage">
+        <h3 id="storyTitle"></h3>
+        <div id="storyBody"></div>
+      </div>
     </div>
-    {% endif %}
+  </div>
 
+  <h2 class="shelf-heading">Your bookshelf</h2>
+  <p class="shelf-sub">Every story you generate is saved here.</p>
+  <div class="shelf" id="shelf">
+    <p class="empty-shelf">No stories yet ΓÇö generate your first one above.</p>
+  </div>
 </div>
 
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+    <h3 id="modalTitle"></h3>
+    <div class="meta" id="modalMeta"></div>
+    <div class="body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const GENRE_COLORS = {
+  "Fantasy":"#5B3A8E", "Science Fiction":"#1E5F74", "Mystery":"#2E2E38",
+  "Romance":"#8E3B5B", "Horror":"#3B1F1F", "Adventure":"#2E6B3E",
+  "Comedy":"#B8863B", "Drama":"#7A2E2E"
+};
+
+const el = id => document.getElementById(id);
+const generateBtn = el('generateBtn');
+const storyPage = el('storyPage');
+const shelf = el('shelf');
+const toast = el('toast');
+const modalOverlay = el('modalOverlay');
+
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'), 2600);
+}
+
+async function generateStory(){
+  const character_name = el('charName').value.trim();
+  const storyline = el('storyline').value.trim();
+  const genre = el('genre').value;
+  const length = el('length').value;
+
+  if(!storyline){
+    showToast("Add a storyline to get started");
+    return;
+  }
+
+  generateBtn.disabled = true;
+  generateBtn.textContent = "Writing...";
+
+  try{
+    const res = await fetch('/generate', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ character_name, storyline, genre, length })
+    });
+    if(!res.ok) throw new Error('Request failed');
+    const data = await res.json();
+
+    el('storyTitle').textContent = data.title || "Untitled";
+    el('storyBody').textContent = data.story;
+    storyPage.classList.add('show');
+    showToast("Saved to your bookshelf");
+    loadArchive();
+  }catch(err){
+    showToast("Something went wrong. Try again.");
+    console.error(err);
+  }finally{
+    generateBtn.disabled = false;
+    generateBtn.textContent = "Generate story";
+  }
+}
+
+async function loadArchive(){
+  try{
+    const res = await fetch('/archive');
+    const items = await res.json();
+    if(!items.length){
+      shelf.innerHTML = '<p class="empty-shelf">No stories yet ΓÇö generate your first one above.</p>';
+      return;
+    }
+    shelf.innerHTML = '';
+    items.forEach(item=>{
+      const btn = document.createElement('button');
+      btn.className = 'spine';
+      btn.style.background = GENRE_COLORS[item.genre] || '#4a4a4a';
+      btn.innerHTML = `<span class="genre-dot"></span><span class="title">${item.title}</span><span></span>`;
+      btn.onclick = () => openStory(item.id);
+      shelf.appendChild(btn);
+    });
+  }catch(err){
+    console.error(err);
+  }
+}
+
+async function openStory(id){
+  try{
+    const res = await fetch(`/archive/${id}`);
+    const item = await res.json();
+    el('modalTitle').textContent = item.title;
+    el('modalMeta').textContent = `${item.genre} ┬╖ ${item.character_name || 'No character set'} ┬╖ ${new Date(item.created_at).toLocaleDateString()}`;
+    el('modalBody').textContent = item.story;
+    modalOverlay.classList.add('show');
+  }catch(err){
+    showToast("Couldn't open that story");
+  }
+}
+
+generateBtn.addEventListener('click', generateStory);
+el('modalClose').addEventListener('click', ()=>modalOverlay.classList.remove('show'));
+modalOverlay.addEventListener('click', e=>{ if(e.target===modalOverlay) modalOverlay.classList.remove('show'); });
+
+loadArchive();
+</script>
 </body>
 </html>

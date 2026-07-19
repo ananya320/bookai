@@ -1,3 +1,6 @@
+﻿import uuid
+from datetime import datetime, timezone
+
 from app.agents.ideator import generate_idea
 from app.agents.planner import create_outline
 from app.agents.writer import write_content
@@ -6,25 +9,28 @@ from app.agents.summarizer import summarize
 from app.utils.memory_manager import save_story
 
 
-def run_pipeline(topic):
+def run_pipeline(topic, character_name="", genre="", storyline=""):
 
-    # Step 1: Generate idea
     idea = generate_idea(topic)
-
-    # Step 2: Create outline
     outline = create_outline(idea)
-
-    # Step 3: Write content
     content = write_content(outline)
-
-    # Step 4: Edit content
     edited = edit_content(content)
-
-    # Step 5: Generate summary
     summary = summarize(edited)
 
-    # Final result
+    if character_name and genre:
+        title = f"{character_name}'s {genre} Story"
+    elif genre:
+        title = f"A {genre} Story"
+    else:
+        title = (storyline or topic)[:60]
+
     result = {
+        "id": str(uuid.uuid4()),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "title": title,
+        "character_name": character_name,
+        "genre": genre,
+        "storyline": storyline,
         "topic": topic,
         "idea": idea,
         "outline": outline,
@@ -32,9 +38,7 @@ def run_pipeline(topic):
         "summary": summary
     }
 
-    # Save to memory JSON
     save_story(result)
-
     return result
     
     

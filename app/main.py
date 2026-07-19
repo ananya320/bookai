@@ -1,6 +1,7 @@
-from fastapi import FastAPI, Request, Form
+﻿from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 import sys
 import os
 
@@ -62,3 +63,80 @@ def generate_book_ui(request: Request, topic: str = Form(...)):
             name="index.html",
             context={"error": str(e)}
         )
+
+
+# ---------------------------------------------------------------------
+# New: JSON API used by the redesigned /ui page (character name, storyline,
+# genre form + bookshelf archive). These are separate from the routes above
+# so nothing existing breaks.
+# ---------------------------------------------------------------------
+
+class GenerateRequest(BaseModel):
+    character_name: str = ""
+    storyline: str
+    genre: str = "Fantasy"
+    length: str = "medium"
+
+
+@app.post("/generate")
+def generate_story(req: GenerateRequest):
+    combined_topic = req.storyline
+    if req.genre:
+        combined_topic += f" (Genre: {req.genre})"
+    if req.character_name:
+        combined_topic += f" (Main character: {req.character_name})"
+
+    try:
+        result = run_pipeline(
+            combined_topic,
+            character_name=req.character_name,
+            genre=req.genre,
+            storyline=req.storyline
+        )
+        return {
+            "id": result["id"],
+            "title": result["title"],
+            "story": result["content"]
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/archive")
+def archive_list():
+    try:
+        stories = get_all_stories()
+    except Exception as e:
+        return {"error": str(e)}
+
+    return [
+        {
+            "id": s.get("id"),
+            "title": s.get("title", "Untitled"),
+            "genre": s.get("genre", ""),
+            "character_name": s.get("character_name", ""),
+            "created_at": s.get("created_at", "")
+        }
+        for s in stories if s.get("id")
+    ]
+
+
+@app.get("/archive/{story_id}")
+def archive_item(story_id: str):
+    try:
+        stories = get_all_stories()
+    except Exception as e:
+        return {"error": str(e)}
+
+    for s in stories:
+        if s.get("id") == story_id:
+            return {
+                "id": s["id"],
+                "title": s.get("title", "Untitled"),
+                "genre": s.get("genre", ""),
+                "character_name": s.get("character_name", ""),
+                "created_at": s.get("created_at", ""),
+                "story": s.get("content", "")
+            }
+
+    return {"error": "Story not found"}
